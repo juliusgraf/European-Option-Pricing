@@ -66,10 +66,8 @@ def control_variate(S0, K, option_type, T, r, q, sigma, n_steps, n_simulation):
         payoff_init[i] = option_payoff(S, K, option_type)
         
     mu = S0 * np.exp((r - q) * T)
-    sigma_f = S0 ** 2 * np.exp((2 * r - q) * T) * (np.exp(sigma ** 2 * T) - 1)
-    beta_estimate = np.cov(payoff_init, f)[0][1] / (sigma_f * (n_simulation-1))
-        
-    payoff = payoff_init - beta_estimate * (S - mu)
+    beta_estimate = np.cov(payoff_init, f)[0][1] / np.var(f)
+    payoff = payoff_init - beta_estimate * (f - mu)
     error_estimate = np.std(payoff) / np.sqrt(n_simulation)
     return np.exp(-r * T) * np.mean(payoff), error_estimate
     
@@ -87,7 +85,7 @@ n_steps = 100
 np.random.seed(110124)
 n_simulation = 4000
 
-# Store the results in a structured way
+# PRINT RESULTS
 estimations = [
     ["Plain Monte Carlo", f"{plain_monte_carlo(S0, K, option_type, T, r, q, sigma, n_steps, n_simulation)[0]:.2f}"],
     ["Antithetic Variate", f"{antithetic_variate(S0, K, option_type, T, r, q, sigma, n_steps, n_simulation)[0]:.2f}"],
@@ -101,7 +99,6 @@ errors = [
     ["Control Variate", f"{control_variate(S0, K, option_type, T, r, q, sigma, n_steps, n_simulation)[1]:.2f}"]
 ]
 
-# Print the tables
 print("### Option Price Estimations ###")
 print(tabulate(estimations, headers=["Method", "Estimation"], tablefmt="grid"))
 
